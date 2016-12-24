@@ -68,8 +68,10 @@ public class ScaffoldCommands {
             return;
         }
 
-        World world = wrapper.getWorld().get();
-        world.save();
+        if (wrapper.isOpen()) {
+            World world = wrapper.getWorld().get();
+            world.save();
+        }
 
         File folder = wrapper.getFolder();
         File archives = new File("scaffold-archives");
