@@ -2,6 +2,5 @@ name: Scaffold
 description: Manage a build server.
 main: net.avicus.scaffold.Scaffold
 version: ${project.version}
-authors: [The Avicus Network]
-depend: [Compendium]
+authors: [Avicus Network]
 website: https://github.com/Avicus/Scaffold

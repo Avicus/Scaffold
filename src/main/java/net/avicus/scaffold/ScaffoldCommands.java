@@ -97,7 +97,7 @@ public class ScaffoldCommands {
     }
 
     @Command(aliases = "create", desc = "Create a new world.", min = 1, max = 1, usage = "<world>", flags = "te")
-    public static void create(CommandContext cmd, CommandSender sender) throws CommandNumberFormatException {
+    public static void create(CommandContext cmd, CommandSender sender) throws CommandNumberFormatException, IOException {
         ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(0));
 
         if (wrapper.isCreated()) {

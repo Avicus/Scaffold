@@ -3,14 +3,15 @@ package net.avicus.scaffold;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.ToString;
-import net.avicus.compendium.config.Config;
-import net.avicus.compendium.config.ConfigFile;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 @ToString(exclude = {"folder", "configFile"})
@@ -31,10 +32,10 @@ public class ScaffoldWorld {
         return Optional.ofNullable(Bukkit.getWorld(this.worldName));
     }
 
-    public Optional<Config> getConfig() {
+    public Optional<Configuration> getConfig() {
         try {
             if (this.configFile.exists())
-                return Optional.of(new ConfigFile(this.configFile));
+                return Optional.of(YamlConfiguration.loadConfiguration(this.configFile));
             return Optional.empty();
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,11 +51,11 @@ public class ScaffoldWorld {
         return this.folder.exists() && new File(this.folder, "level.dat").exists();
     }
 
-    public World create(WorldType type, Environment env, long seed) {
+    public World create(WorldType type, Environment env, long seed) throws IOException {
         Preconditions.checkArgument(!isOpen(), "World already loaded.");
         Preconditions.checkArgument(!isCreated(), "World already created.");
 
-        Config config = new Config();
+        YamlConfiguration config = new YamlConfiguration();
         config.set("type", type.name());
         config.set("environment", env.name());
         config.set("seed", seed);
@@ -82,7 +83,7 @@ public class ScaffoldWorld {
         Preconditions.checkArgument(!isOpen(), "World already loaded.");
         Preconditions.checkArgument(isCreated(), "World is not created.");
         deleteUid();
-        Optional<Config> config = getConfig();
+        Optional<Configuration> config = getConfig();
         WorldCreator creator = worldCreator(config);
         World world = creator.createWorld();
         world.setAutoSave(true);
@@ -106,12 +107,12 @@ public class ScaffoldWorld {
         return Bukkit.unloadWorld(world, true);
     }
 
-    private WorldCreator worldCreator(Optional<Config> config) {
+    private WorldCreator worldCreator(Optional<Configuration> config) {
         WorldCreator creator = new WorldCreator(this.worldName);
         creator.generator(new NullChunkGenerator());
         if (config.isPresent()) {
-            WorldType type = WorldType.valueOf(config.get().getAsString("type").toUpperCase());
-            Environment environment =  Environment.valueOf(config.get().getAsString("environment").toUpperCase());
+            WorldType type = WorldType.valueOf(config.get().getString("type").toUpperCase());
+            Environment environment =  Environment.valueOf(config.get().getString("environment").toUpperCase());
             long seed = config.get().getLong("seed");
 
             creator.type(type);
