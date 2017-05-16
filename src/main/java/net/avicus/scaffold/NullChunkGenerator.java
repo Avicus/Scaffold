@@ -5,6 +5,7 @@ import org.bukkit.generator.ChunkGenerator;
 
 import java.util.Random;
 
+@SuppressWarnings("deprecation")
 public class NullChunkGenerator extends ChunkGenerator {
     @Override
     public byte[] generate(World world, Random random, int x, int z) {
