@@ -15,6 +15,18 @@
         <url>https://github.com/Avicus/Scaffold</url>
     </scm>
 
+    <!-- Deployment -->
+    <distributionManagement>
+        <repository>
+            <id>avicus-repo</id>
+            <url>https://repo.avicus.net/content/repositories/releases-public/</url>
+        </repository>
+        <snapshotRepository>
+            <id>avicus-repo</id>
+            <url>https://repo.avicus.net/content/repositories/snapshots-public/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>spigot-repo</id>
