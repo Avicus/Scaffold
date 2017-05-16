@@ -8,8 +8,13 @@ import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
 import org.apache.commons.io.FileUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.WorldType;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -21,7 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 public class ScaffoldCommands {
     private static final Random random = new Random();
@@ -265,22 +276,18 @@ public class ScaffoldCommands {
         });
     }
 
+    @Command(aliases = "close-all", desc = "Close all empty worlds")
+    public static void closeAll(CommandContext cmd, CommandSender sender) {
+        List<ScaffoldWorld> all = Scaffold.instance().getScaffoldWorlds();
+        all.forEach(w -> {
+            if (w.isOpen() && w.getPlayers().isEmpty())
+                w.unload();
+        });
+    }
+
     @Command(aliases = "worlds", desc = "Show all worlds.", min = 0, max = 1, flags = "l", help = "(search)")
     public static void worlds(CommandContext cmd, CommandSender sender) {
-        List<ScaffoldWorld> all = new ArrayList<>();
-
-        File scaffold = new File("scaffold");
-        if (scaffold.exists()) {
-            File[] contents = scaffold.listFiles();
-            if (contents != null) {
-                for (File folder : contents) {
-                    ScaffoldWorld world = new ScaffoldWorld(folder.getName());
-                    if (world.isCreated())
-                        all.add(world);
-                }
-            }
-        }
-
+        List<ScaffoldWorld> all = Scaffold.instance().getScaffoldWorlds();
         Collections.sort(all, new Comparator<ScaffoldWorld>() {
             @Override
             public int compare(ScaffoldWorld o1, ScaffoldWorld o2) {

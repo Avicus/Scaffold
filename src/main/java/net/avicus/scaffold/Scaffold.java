@@ -2,7 +2,12 @@ package net.avicus.scaffold;
 
 import com.google.common.base.Preconditions;
 import com.sk89q.bukkit.util.CommandsManagerRegistration;
-import com.sk89q.minecraft.util.commands.*;
+import com.sk89q.minecraft.util.commands.CommandException;
+import com.sk89q.minecraft.util.commands.CommandPermissionsException;
+import com.sk89q.minecraft.util.commands.CommandUsageException;
+import com.sk89q.minecraft.util.commands.CommandsManager;
+import com.sk89q.minecraft.util.commands.MissingNestedCommandException;
+import com.sk89q.minecraft.util.commands.WrappedCommandException;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,8 +15,11 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Scaffold extends JavaPlugin implements TabCompleter {
@@ -48,6 +56,22 @@ public class Scaffold extends JavaPlugin implements TabCompleter {
                 }
             }
         }, 0, 20);
+    }
+
+    public List<ScaffoldWorld> getScaffoldWorlds() {
+        List<ScaffoldWorld> all = new ArrayList<>();
+        File scaffold = new File("scaffold");
+        if (scaffold.exists()) {
+            File[] contents = scaffold.listFiles();
+            if (contents != null) {
+                for (File folder : contents) {
+                    ScaffoldWorld world = new ScaffoldWorld(folder.getName());
+                    if (world.isCreated())
+                        all.add(world);
+                }
+            }
+        }
+        return all;
     }
 
     @Override

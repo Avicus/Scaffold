@@ -6,11 +6,18 @@ import lombok.ToString;
 import net.avicus.compendium.config.Config;
 import net.avicus.compendium.config.ConfigFile;
 import org.apache.commons.io.FileUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ToString(exclude = {"folder", "configFile"})
@@ -29,6 +36,12 @@ public class ScaffoldWorld {
 
     public Optional<World> getWorld() {
         return Optional.ofNullable(Bukkit.getWorld(this.worldName));
+    }
+
+    public List<Player> getPlayers() {
+        List<Player> players = new ArrayList<>();
+        getWorld().ifPresent(w -> w.getEntitiesByClass(Player.class).forEach(players::add));
+        return players;
     }
 
     public Optional<Config> getConfig() {
