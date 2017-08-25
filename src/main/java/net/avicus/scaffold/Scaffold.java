@@ -8,6 +8,12 @@ import com.sk89q.minecraft.util.commands.CommandUsageException;
 import com.sk89q.minecraft.util.commands.CommandsManager;
 import com.sk89q.minecraft.util.commands.MissingNestedCommandException;
 import com.sk89q.minecraft.util.commands.WrappedCommandException;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,109 +21,105 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 public class Scaffold extends JavaPlugin implements TabCompleter {
-    private static Scaffold instance;
-    private CommandsManager<CommandSender> commands;
-    private Map<ScaffoldWorld, Long> locked = new HashMap<>();
 
-    public static Scaffold instance() {
-        return instance;
-    }
+  private static Scaffold instance;
+  private CommandsManager<CommandSender> commands;
+  private Map<ScaffoldWorld, Long> locked = new HashMap<>();
 
-    @Override
-    public void onEnable() {
-        instance = this;
+  public static Scaffold instance() {
+    return instance;
+  }
 
-        getServer().getPluginManager().registerEvents(new ScaffoldListener(), this);
+  @Override
+  public void onEnable() {
+    instance = this;
 
-        this.commands = new CommandsManager<CommandSender>() {
-            @Override
-            public boolean hasPermission(CommandSender sender, String perm) {
-                return sender instanceof ConsoleCommandSender || sender.hasPermission(perm);
-            }
-        };
+    getServer().getPluginManager().registerEvents(new ScaffoldListener(), this);
 
-        CommandsManagerRegistration cmds = new CommandsManagerRegistration(this, this.commands);
-        cmds.register(ScaffoldCommands.class);
+    this.commands = new CommandsManager<CommandSender>() {
+      @Override
+      public boolean hasPermission(CommandSender sender, String perm) {
+        return sender instanceof ConsoleCommandSender || sender.hasPermission(perm);
+      }
+    };
 
-        getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            @Override
-            public void run() {
-                for (ScaffoldWorld wrapper : locked.keySet()) {
-                    if (wrapper.isOpen())
-                        wrapper.getWorld().get().setFullTime(locked.get(wrapper));
-                }
-            }
-        }, 0, 20);
-    }
+    CommandsManagerRegistration cmds = new CommandsManagerRegistration(this, this.commands);
+    cmds.register(ScaffoldCommands.class);
 
-    public List<ScaffoldWorld> getScaffoldWorlds() {
-        List<ScaffoldWorld> all = new ArrayList<>();
-        File scaffold = new File("scaffold");
-        if (scaffold.exists()) {
-            File[] contents = scaffold.listFiles();
-            if (contents != null) {
-                for (File folder : contents) {
-                    ScaffoldWorld world = new ScaffoldWorld(folder.getName());
-                    if (world.isCreated())
-                        all.add(world);
-                }
-            }
+    getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+      @Override
+      public void run() {
+        for (ScaffoldWorld wrapper : locked.keySet()) {
+          if (wrapper.isOpen()) {
+            wrapper.getWorld().get().setFullTime(locked.get(wrapper));
+          }
         }
-        return all;
-    }
+      }
+    }, 0, 20);
+  }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-        try {
-            this.commands.execute(cmd.getName(), args, sender, sender);
-        } catch (CommandPermissionsException e) {
-            sender.sendMessage(ChatColor.RED + "You don't have permission.");
-        } catch (MissingNestedCommandException e) {
-            sender.sendMessage(ChatColor.RED + e.getUsage());
-        } catch (CommandUsageException e) {
-            sender.sendMessage(ChatColor.RED + e.getMessage());
-            sender.sendMessage(ChatColor.RED + e.getUsage());
-        } catch (WrappedCommandException e) {
-            if (e.getCause() instanceof NumberFormatException) {
-                sender.sendMessage(ChatColor.RED + "Number expected, string received instead.");
-            } else {
-                sender.sendMessage(ChatColor.RED + "An error has occurred. See console.");
-                e.printStackTrace();
-            }
-        } catch (CommandException e) {
-            sender.sendMessage(ChatColor.RED + e.getMessage());
+  public List<ScaffoldWorld> getScaffoldWorlds() {
+    List<ScaffoldWorld> all = new ArrayList<>();
+    File scaffold = new File("scaffold");
+    if (scaffold.exists()) {
+      File[] contents = scaffold.listFiles();
+      if (contents != null) {
+        for (File folder : contents) {
+          ScaffoldWorld world = new ScaffoldWorld(folder.getName());
+          if (world.isCreated()) {
+            all.add(world);
+          }
         }
+      }
+    }
+    return all;
+  }
 
-        return true;
+  @Override
+  public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+    try {
+      this.commands.execute(cmd.getName(), args, sender, sender);
+    } catch (CommandPermissionsException e) {
+      sender.sendMessage(ChatColor.RED + "You don't have permission.");
+    } catch (MissingNestedCommandException e) {
+      sender.sendMessage(ChatColor.RED + e.getUsage());
+    } catch (CommandUsageException e) {
+      sender.sendMessage(ChatColor.RED + e.getMessage());
+      sender.sendMessage(ChatColor.RED + e.getUsage());
+    } catch (WrappedCommandException e) {
+      if (e.getCause() instanceof NumberFormatException) {
+        sender.sendMessage(ChatColor.RED + "Number expected, string received instead.");
+      } else {
+        sender.sendMessage(ChatColor.RED + "An error has occurred. See console.");
+        e.printStackTrace();
+      }
+    } catch (CommandException e) {
+      sender.sendMessage(ChatColor.RED + e.getMessage());
     }
 
-    public void sync(Runnable runnable) {
-        getServer().getScheduler().runTask(this, runnable);
-    }
+    return true;
+  }
 
-    public void async(Runnable runnable) {
-        getServer().getScheduler().runTaskAsynchronously(this, runnable);
-    }
+  public void sync(Runnable runnable) {
+    getServer().getScheduler().runTask(this, runnable);
+  }
 
-    public boolean toggleLock(ScaffoldWorld wrapper) {
-        Preconditions.checkArgument(wrapper.isOpen(), "World not open.");
-        Iterator<ScaffoldWorld> iterator = this.locked.keySet().iterator();
-        while (iterator.hasNext()) {
-            ScaffoldWorld next = iterator.next();
-            if (next.getName().equals(wrapper.getName())) {
-                iterator.remove();
-                return false;
-            }
-        }
-        locked.put(wrapper, wrapper.getWorld().get().getFullTime());
-        return true;
+  public void async(Runnable runnable) {
+    getServer().getScheduler().runTaskAsynchronously(this, runnable);
+  }
+
+  public boolean toggleLock(ScaffoldWorld wrapper) {
+    Preconditions.checkArgument(wrapper.isOpen(), "World not open.");
+    Iterator<ScaffoldWorld> iterator = this.locked.keySet().iterator();
+    while (iterator.hasNext()) {
+      ScaffoldWorld next = iterator.next();
+      if (next.getName().equals(wrapper.getName())) {
+        iterator.remove();
+        return false;
+      }
     }
+    locked.put(wrapper, wrapper.getWorld().get().getFullTime());
+    return true;
+  }
 }
