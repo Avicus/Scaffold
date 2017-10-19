@@ -7,6 +7,7 @@ import com.mashape.unirest.http.Unirest;
 import com.sk89q.minecraft.util.commands.Command;
 import com.sk89q.minecraft.util.commands.CommandContext;
 import com.sk89q.minecraft.util.commands.CommandNumberFormatException;
+import com.sk89q.minecraft.util.commands.CommandPermissions;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +39,7 @@ public class ScaffoldCommands {
   private static final Random random = new Random();
 
   @Command(aliases = "lock", desc = "Lock a world at this time.", min = 1, max = 1, usage = "<world>")
+  @CommandPermissions("scaffold.lock")
   public static void lock(CommandContext cmd, CommandSender sender) {
     String current = "---";
     if (sender instanceof Player) {
@@ -66,6 +68,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "archive", desc = "Archive and delete a world (use -k to keep).", min = 1, max = 1, usage = "<world>", flags = "k")
+  @CommandPermissions("scaffold.archive")
   public static void archive(CommandContext cmd, CommandSender sender) {
     ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(0));
 
@@ -111,6 +114,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "create", desc = "Create a new world.", min = 1, max = 1, usage = "<world>", flags = "te")
+  @CommandPermissions("scaffold.create")
   public static void create(CommandContext cmd, CommandSender sender)
       throws CommandNumberFormatException {
     ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(0));
@@ -134,6 +138,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "open", desc = "Open a world.", min = 1, max = 1, usage = "<world>")
+  @CommandPermissions("scaffold.open")
   public static void open(CommandContext cmd, CommandSender sender) {
     ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(0));
 
@@ -163,6 +168,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "close", desc = "Close a world.", min = 1, max = 1, usage = "<world>")
+  @CommandPermissions("scaffold.close")
   public static void close(CommandContext cmd, CommandSender sender) {
     ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(0));
 
@@ -197,6 +203,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "upload", desc = "Upload a world.", min = 0, max = 1, usage = "<world>")
+  @CommandPermissions("scaffold.upload")
   public static void upload(CommandContext cmd, CommandSender sender) {
     String current = "---";
     if (sender instanceof Player) {
@@ -242,6 +249,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "download", desc = "Download a world.", min = 2, max = 2, usage = "<.zip file link> <world name>")
+  @CommandPermissions("scaffold.download")
   public static void download(CommandContext cmd, CommandSender sender) {
     String link = cmd.getString(0);
     ScaffoldWorld wrapper = ScaffoldWorld.ofSearch(cmd.getString(1));
@@ -286,6 +294,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "close-all", desc = "Close all empty worlds")
+  @CommandPermissions("scaffold.close.all")
   public static void closeAll(CommandContext cmd, CommandSender sender) {
     List<ScaffoldWorld> all = Scaffold.instance().getScaffoldWorlds();
     all.forEach(w -> {
@@ -296,6 +305,7 @@ public class ScaffoldCommands {
   }
 
   @Command(aliases = "worlds", desc = "Show all worlds.", min = 0, max = 1, flags = "l", help = "(search)")
+  @CommandPermissions("scaffold.worlds")
   public static void worlds(CommandContext cmd, CommandSender sender) {
     List<ScaffoldWorld> all = Scaffold.instance().getScaffoldWorlds();
     Collections.sort(all, new Comparator<ScaffoldWorld>() {

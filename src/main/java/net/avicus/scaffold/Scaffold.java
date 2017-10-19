@@ -97,7 +97,6 @@ public class Scaffold extends JavaPlugin implements TabCompleter {
     } catch (CommandException e) {
       sender.sendMessage(ChatColor.RED + e.getMessage());
     }
-
     return true;
   }
 
